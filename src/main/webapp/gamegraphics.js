@@ -320,7 +320,7 @@ GameGraphicsPainter.prototype.drawParticles = function(object) {
         //if (this.vectorWithinBounds(this.particles[i].getPosition())) {
 
         var random = Math.floor(Math.random() * this.particleImages.length);
-        this.particles[i].draw(this.ctx, this.particleImages[random]);
+        this.particles[i].draw(this.ctx, this.particleImages[random], this.zoom);
         // }
         this.particles[i].move();
     }

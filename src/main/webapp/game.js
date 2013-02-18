@@ -1,13 +1,11 @@
-function Game() {
-}
-;
+function Game() {};
 
 Game.initialize = function() {
 
     this.gamearea_x = 4200;
     this.gamearea_y = 2500;
     this.ships = []
-    this.ships[0] = new TerranShip(this.gamearea_x / 2, this.gamearea_y / 2, 1);
+    this.ships[0] = new Terran(this.gamearea_x / 2, this.gamearea_y / 2, 1);
     this.ships[1] = new AlienGunship(450, 450, 2);
     this.painter = new GameGraphicsPainter();
     this.fps = 60;

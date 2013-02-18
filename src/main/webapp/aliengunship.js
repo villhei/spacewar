@@ -1,30 +1,50 @@
 function AlienGunship(pos_x, pos_y, id) {
     Ship.call(this, pos_x, pos_y, id);
-    this.ship = new Ship(pos_x, pos_y, id);
-    this.ship.accelspeed = 0.04;
-    this.ship.MAX_SPEED = 10;
-    this.ship.health = 100;
-    this.ship.turningspeed = 1.5;
-    this.ship.shieldradius = 60;
-    this.ship.radius = this.shieldradius;
-    this.ship.mass = this.size * 10;
-    this.ship.thrustdistance = 25;
-    this.ship.travelspeed = 1;
-    this.ship.thrustTail = [];
-    this.ship.c_thrust = false;
-    this.ship.gravity_modifier = 0.05;
+    this.accelspeed = 0.04;
+    this.angle = 0.0;
+    this.size = 50;
+    this.shieldradius = 60;
+    this.radius = this.shieldradius;
+    this.mass = this.size * 10;
+    this.MAX_SPEED = 10;
+    this.health = 100;
+    this.turningspeed = 1.5;
+    this.c_thrust = false;
+    this.selectedweapon = 0;
+    this.thrustdistance = 25;
     this.weapon = new Laser();
+    this.modulo = 2;
+    this.turnindex = 1;
     this.weaponrange = this.weapon.range;
-    this.thrustColor = 'rgba(255, 32, 0, 0.1)';
+    this.gravity_modifier = 0.00;
     this.imageUrl = 'img/alien_gunship_dark.png';
     this.image = new Image();
     this.image.src = this.imageUrl;
-
+    this.thrustColor = 'rgba(86, 137, 227, 0.1)';
 }
 
-AlienGunShip.prototype = new Ship();
+AlienGunship.prototype = new Ship();
+AlienGunship.prototype.constructor = AlienGunship;
 
-AlienGunShip.prototype.constructor = AlienGunShip;
+
+AlienGunship.prototype.drawWeapon = function(ctx, ship, zoom, MIN) {
+    this.weapon.drawWeaponFire(ctx, ship, zoom, MIN);
+};
+
+
+AlienGunship.prototype.detectHit = function(object) {
+    if (!this.firing) {
+        return 0;
+    }
+    var hit = 0;
+    var laserOriginArray = this.getLaserOrigins();
+    for (var i = 0; i < laserOriginArray.length; ++i) {
+        if (this.weapon.hitObject(object, laserOriginArray[i], this.getTargetCoordinates())) {
+            hit += this.weapon.damage;
+        }
+    }
+    return hit;
+};
 
 AlienGunship.prototype.getLaserOrigins = function() {
 
@@ -60,11 +80,109 @@ AlienGunship.prototype.getLaserOrigins = function() {
     return array;
 };
 
+AlienGunship.prototype.angleTo = function(asteroid) {
+    var dx = this.pos_x - asteroid.pos_x;
+    var dy = this.pos_y - asteroid.pos_y;
+    var angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    return angle;
+}
+
+AlienGunship.prototype.getPosition = function() {
+    return new Vector(this.pos_x, this.pos_y);
+}
+
+AlienGunship.prototype.accelerate = function() {
+    this.vel_x += Math.cos(this.angle * (Math.PI / 180)) * this.accelspeed;
+    this.vel_y += Math.sin(this.angle * (Math.PI / 180)) * this.accelspeed;
+    this.queueThrust();
+}
+
+AlienGunship.prototype.queueThrust = function() {
+    var i = 0;
+    // Empty queue if not continous thrust or no queue before
+    if (this.thrustTail.length == 0 || this.c_thrust == false) {
+        var queue = [];
+        this.thrustTail.push(queue);
+    }
+    i = this.thrustTail.length - 1;
+
+    var tgt_coords = this.getPosition();
+    tgt_coords.x = (tgt_coords.x - Math.cos((this.angle) * Math.PI / 180) * this.thrustdistance);
+    tgt_coords.y = (tgt_coords.y - Math.sin((this.angle) * Math.PI / 180) * this.thrustdistance);
+
+    this.thrustTail[i].push(tgt_coords);
+}
+
+AlienGunship.prototype.dequeueThrust = function() {
+    if (this.thrustTail.length > 0) {
+        // Shift out empty queues
+        if (this.thrustTail[0].length == 0) {
+            this.thrustTail.shift();
+        }
+        for (var i = 0; i < this.thrustTail.length; ++i) {
+            // For bigger tails, clean up a little faster
+            if (this.thrustTail[i].length > 30) {
+                this.thrustTail[i].shift();
+            }
+            this.thrustTail[i].shift();
+        }
+    }
+    if ((Key.isDown(Key.UP) && this.id == 1) || (Key.isDown(Key.R) && this.id == 2)) {
+        this.c_thrust = true;
+    }
+    else {
+        this.c_thrust = false;
+    }
+}
+
+AlienGunship.prototype.applySpeedLimit = function() {
+    if (this.vel_x >= this.MAX_SPEED) {
+        this.vel_x = this.MAX_SPEED;
+    }
+    else if (this.vel_x <= -this.MAX_SPEED) {
+        this.vel_x = -this.MAX_SPEED;
+    }
+    if (this.vel_y >= this.MAX_SPEED) {
+        this.vel_y = this.MAX_SPEED;
+    }
+    else if (this.vel_y <= -this.MAX_SPEED) {
+        this.vel_y = -this.MAX_SPEED;
+    }
+}
+
+AlienGunship.prototype.move = function() {
+    if (this.turnindex % this.modulo == 0) {
+        this.dequeueThrust();
+        this.turnindex = 1;
+    } else {
+        this.turnindex++;
+    }
+    this.applySpeedLimit();
+    this.pos_x += this.vel_x;
+    this.pos_y += this.vel_y;
+
+    if (this.pos_x > Game.gamearea_x) {
+        this.pos_x = 1;
+    }
+    if (this.pos_y > Game.gamearea_y) {
+        this.pos_y = 1;
+    }
+    if (this.pos_x < 0) {
+        this.pos_x = Game.gamearea_x - 1;
+    }
+    if (this.pos_y < 0) {
+        this.pos_y = Game.gamearea_y - 1;
+    }
+}
 
 
-
-
-
+AlienGunship.prototype.turnRight = function() {
+    this.angle += this.turningspeed;
+    if (this.angle == 360)
+    {
+        this.angle = 0;
+    }
+}
 
 AlienGunship.prototype.turnLeft = function() {
     this.angle -= this.turningspeed;

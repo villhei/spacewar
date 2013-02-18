@@ -7,7 +7,7 @@ function Asteroid(pos_x, pos_y, radius) {
     this.growing = false;
     this.restitution = 0.005;
     this.massrandom = Math.random();
-    this.mass = 300*this.massrandom*(radius/5);
+    this.mass = 10*this.radius;
     this.tint = Math.floor(60*this.massrandom);
     this.tint_b = 140 + this.tint;
     this.color = 'rgba(34, 77,';
@@ -105,8 +105,8 @@ return new Vector(this.pos_x, this.pos_y);
 Asteroid.prototype.applyGravityPull = function(neighbourgh) {
 var pull_distance = this.distanceToAsteroid(neighbourgh);
 var angle = this.angleTo(neighbourgh);
-this.vel_x += Math.cos(angle*Math.PI/180)*(neighbourgh.mass/pull_distance)/Game.fps*0.006;
-this.vel_y += Math.sin(angle*Math.PI/180)*(neighbourgh.mass/pull_distance)/Game.fps*0.006;
+this.vel_x += Math.cos(angle*Math.PI/180)*(neighbourgh.mass*this.mass/1000)/pull_distance*pull_distance/10000*(1/Game.fps);
+this.vel_y += Math.sin(angle*Math.PI/180)*(neighbourgh.mass*this.mass/1000)/pull_distance*pull_distance/10000*(1/Game.fps);
 
 }
 

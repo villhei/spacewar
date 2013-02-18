@@ -8,18 +8,18 @@ function Cannon(ship) {
     this.firespeed = 1000 / 3;
     this.projectiles = [];
     this.projectileSize = 2;
-    this.projectileVelocity = 20;
+    this.projectileVelocity = 10;
     this.lastFire = null;
     this.fireInterval = 1000 / 12.5;
 }
 ;
 
-Cannon.prototype.fire = function(firePosition, angle) {
+Cannon.prototype.fire = function(ship, firePosition, angle) {
     if (this.firing === true) {
         var time = new Date().getTime();
         if (this.lastFire === null || this.lastFire + this.fireInterval - time < 0) {
-            var vel_x = Math.cos(angle * Math.PI / 180) * this.projectileVelocity;
-            var vel_y = Math.sin(angle * Math.PI / 180) * this.projectileVelocity;
+            var vel_x = ship.vel_x + Math.cos(angle * Math.PI / 180) * this.projectileVelocity;
+            var vel_y = ship.vel_y + Math.sin(angle * Math.PI / 180) * this.projectileVelocity;
             var projectile = new Projectile(firePosition, new Vector(vel_x, vel_y), this.range, this.projectileVelocity);
             this.projectiles.push(projectile);
             this.lastFire = time;

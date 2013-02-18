@@ -43,10 +43,10 @@ Particle.prototype.move = function() {
     this.lifetime--;
 }
 
-Particle.prototype.draw = function(ctx, image) {
+Particle.prototype.draw = function(ctx, image, zoomLevel) {
 	var delta_x = this.x-15/2;
 	var delta_y = this.y-15/2;
-	ctx.drawImage(image, delta_x, delta_y, 15, 15);
+	ctx.drawImage(image, delta_x, delta_y, 15*zoomLevel, 15*zoomLevel);
 }
 
 //Particle.prototype.draw = function(ctx) {

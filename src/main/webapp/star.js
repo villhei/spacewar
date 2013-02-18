@@ -3,7 +3,7 @@ function Star(size, pos_x, pos_y) {
     this.pos_x = pos_x;
     this.pos_y = pos_y;
     this.pulse = 0;
-    this.velocityModifier = null;
+    this.velocityModifier;
     this.backgroundAsteroidImage = new Image();
     this.bgAsteroidUrl = 'img/bgasteroid.png';
     this.backgroundAsteroidImage.src = this.bgAsteroidUrl;
@@ -54,7 +54,7 @@ Star.prototype.move = function(velocity) {
         this.counter == 0;
     }
     this.pos_x += velocity.x*this.velocityModifier.x;
-    this.pos_y += velocity.y*this.velocityModifier.y;
+    this.pos_y += velocity.y*this.velocityModifier.x;
 
 }
 
